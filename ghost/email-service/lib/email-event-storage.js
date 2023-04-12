@@ -129,11 +129,7 @@ class EmailEventStorage {
     }
 
     async unsubscribeFromNewsletters(event) {
-        try {
-            await this.#membersRepository.update({newsletters: []}, {id: event.memberId});
-        } catch (err) {
-            logging.error(err);
-        }
+        await this.#membersRepository.update({newsletters: []}, {id: event.memberId});
     }
 }
 

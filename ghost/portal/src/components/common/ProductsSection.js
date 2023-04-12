@@ -323,8 +323,8 @@ export const ProductsSectionStyles = ({site}) => {
             position: sticky;
             bottom: 0;
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: flex-end;
             width: 100%;
             justify-self: flex-end;
             padding: 40px 0 32px;
@@ -356,23 +356,6 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-btn-product .gh-portal-btn:hover {
             opacity: 0.9;
-        }
-
-        .gh-portal-btn-product .gh-portal-btn {
-            background: var(--brandcolor);
-            color: var(--white);
-            border: none;
-            width: 100%;
-            z-index: 900;
-        }
-
-        .gh-portal-btn-product .gh-portal-error-message {
-            z-index: 900;
-            color: var(--red);
-            font-size: 1.4rem;
-            min-height: 40px;
-            padding-bottom: 13px;
-            margin-bottom: -40px;
         }
 
         .gh-portal-current-plan {
@@ -635,7 +618,7 @@ function ProductCardPrice({product}) {
     );
 }
 
-function FreeProductCard({products, handleChooseSignup, error}) {
+function FreeProductCard({products, handleChooseSignup}) {
     const {site, action} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
@@ -709,7 +692,6 @@ function FreeProductCard({products, handleChooseSignup, error}) {
                                 }}>
                                 {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : 'Choose')}
                             </button>
-                            {error && <div className="gh-portal-error-message">{error}</div>}
                         </div>
                         : '')}
                 </div>
@@ -732,7 +714,7 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
     return (noOfProducts > 1 ? 'Choose' : 'Continue');
 }
 
-function ProductCard({product, products, selectedInterval, handleChooseSignup, error}) {
+function ProductCard({product, products, selectedInterval, handleChooseSignup}) {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
     const {action} = useContext(AppContext);
     const trialDays = product.trial_days;
@@ -783,7 +765,6 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup, e
                                 {...{selectedProduct, product, disabled, noOfProducts, trialDays}}
                             />
                         </button>
-                        {error && <div className="gh-portal-error-message">{error}</div>}
                     </div>
                 </div>
             </div>
@@ -791,24 +772,15 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup, e
     );
 }
 
-function getProductErrorMessage({product, products, selectedInterval, errors}) {
-    const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct: product.id});
-    if (selectedPrice && selectedPrice.id && errors && errors[selectedPrice.id]) {
-        return errors[selectedPrice.id];
-    }
-    return null;
-}
-
-function ProductCards({products, selectedInterval, handleChooseSignup, errors}) {
+function ProductCards({products, selectedInterval, handleChooseSignup}) {
     return products.map((product) => {
-        const error = getProductErrorMessage({product, products, selectedInterval, errors});
         if (product.id === 'free') {
             return (
-                <FreeProductCard products={products} key={product.id} handleChooseSignup={handleChooseSignup} error={error} />
+                <FreeProductCard products={products} key={product.id} handleChooseSignup={handleChooseSignup} />
             );
         }
         return (
-            <ProductCard products={products} product={product} selectedInterval={selectedInterval} key={product.id} handleChooseSignup={handleChooseSignup} error={error}/>
+            <ProductCard products={products} product={product} selectedInterval={selectedInterval} key={product.id} handleChooseSignup={handleChooseSignup} />
         );
     });
 }
@@ -901,7 +873,7 @@ function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
     }
 }
 
-function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {
+function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup}) {
     const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     const defaultInterval = getActiveInterval({portalPlans});
@@ -952,7 +924,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
                     : '')}
 
                 <div className="gh-portal-products-grid">
-                    <ProductCards products={products} selectedInterval={activeInterval} handleChooseSignup={handleChooseSignup} errors={errors}/>
+                    <ProductCards products={products} selectedInterval={activeInterval} handleChooseSignup={handleChooseSignup} />
                 </div>
             </section>
         </ProductsContext.Provider>

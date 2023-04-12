@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
-import EditPostsAccessModal from './modals/edit-posts-access';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -11,7 +10,6 @@ export default class PostsContextMenu extends Component {
     @service session;
     @service infinity;
     @service modals;
-    @service store;
 
     get menu() {
         return this.args.menu;
@@ -31,16 +29,6 @@ export default class PostsContextMenu extends Component {
         });
     }
 
-    @action
-    async editPostsAccess() {
-        this.menu.close();
-        await this.modals.open(EditPostsAccessModal, {
-            isSingle: this.selectionList.isSingle,
-            count: this.selectionList.count,
-            confirm: this.editPostsAccessTask
-        });
-    }
-
     @task
     *deletePostsTask(close) {
         const deletedModels = this.selectionList.availableModels;
@@ -51,35 +39,6 @@ export default class PostsContextMenu extends Component {
         // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
         this.infinity.replace(this.selectionList.infinityModel, remainingModels);
         this.selectionList.clearSelection();
-        close();
-
-        return true;
-    }
-
-    @task
-    *editPostsAccessTask(close, {visibility, tiers}) {
-        const updatedModels = this.selectionList.availableModels;
-        yield this.performBulkEdit('access', {visibility, tiers});
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        visibility
-                    },
-                    relationships: {
-                        links: {
-                            data: tiers
-                        }
-                    }
-                }
-            });
-        }
-
         close();
 
         return true;
@@ -126,16 +85,7 @@ export default class PostsContextMenu extends Component {
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        featured: true
-                    }
-                }
-            });
+            post.set('featured', true);
         }
 
         // Close the menu
@@ -149,16 +99,7 @@ export default class PostsContextMenu extends Component {
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: 'post',
-                    attributes: {
-                        featured: false
-                    }
-                }
-            });
+            post.set('featured', false);
         }
 
         // Close the menu
